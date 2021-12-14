@@ -21,17 +21,42 @@ rarely used "faint text" attribute. This does not seem like a good approach.
 
 '
 
+SHOW_FAINT=1
+SHOW_NORMAL=1
+SHOW_BOLD=1
+for cmd_arg in $@
+do
+  [ $cmd_arg = '--no-faint' ] && SHOW_FAINT=0
+  [ $cmd_arg = '--no-normal' ] && SHOW_NORMAL=0
+  [ $cmd_arg = '--no-bold' ] && SHOW_BOLD=0
+  if [ $cmd_arg = '--help' ]
+  then
+    cat <<EOF
+The program prints out coloured text on coloured background using ANSI codes.
+By default, it prints text with three font weights: faint, normal, and bold.
+
+The following command line arguments are supported:
+
+  --help        - to show this text
+  --no-faint   - to skip printing 'faint' text
+  --no-normal  - to skip printing 'normal' text
+  --no-bold    - to skip printing 'bold' text
+EOF
+    exit 0
+  fi
+done
+
 print_palette ()
 {
-  TEST_TXT='aWm@*DEw'
-  INDENT='                        '
+  TEST_TXT='Wm@*E'
+  INDENT='                    '
   BG_CODES_LIST="$1"
-  echo "$INDENT  black     red     green   yellow    blue    magenta   cyan    white   default  "
+  echo "${INDENT}black -red- green yellw blue- mgnta cyan- white deflt"
 
   printf "%s" "$INDENT"
   echo "$BG_CODES_LIST" | while read BG_CODE
   do
-    printf "%5sm   " "$BG_CODE"
+    printf "%3sm  " "$BG_CODE"
   done
   echo ""
 
@@ -47,25 +72,31 @@ print_palette ()
       35) FG_NAME="magenta" ;;
       36) FG_NAME="cyan" ;;
       37) FG_NAME="white" ;;
-      90) FG_NAME="int black" ;;
-      91) FG_NAME="int red" ;;
-      92) FG_NAME="int green" ;;
-      93) FG_NAME="int yellow" ;;
-      94) FG_NAME="int blue" ;;
-      95) FG_NAME="int magenta" ;;
-      96) FG_NAME="int cyan" ;;
-      97) FG_NAME="int white" ;;
+      90) FG_NAME="br.black" ;;
+      91) FG_NAME="br.red" ;;
+      92) FG_NAME="br.green" ;;
+      93) FG_NAME="br.yllw" ;;
+      94) FG_NAME="br.blue" ;;
+      95) FG_NAME="br.mgnta" ;;
+      96) FG_NAME="br.cyan" ;;
+      97) FG_NAME="br.white" ;;
       *) FG_NAME="?" ;;
     esac
+
     for STYLE_CODE in 2 0 1
     do
-    case $STYLE_CODE in
-      0) STYLE_NAME="normal" ;;
-      1) STYLE_NAME="bold" ;;
-      2) STYLE_NAME="faint" ;;
-      *) STYLE_NAME="?" ;;
-    esac
-      printf " %sm %6s \033[${STYLE_CODE};${FG_CODE}m%-11s \033[0m" "$FG_CODE" "$STYLE_NAME" "$FG_NAME"
+      [ $STYLE_CODE -eq 2 ] && [ $SHOW_FAINT -eq 0 ] && continue
+      [ $STYLE_CODE -eq 0 ] && [ $SHOW_NORMAL -eq 0 ] && continue
+      [ $STYLE_CODE -eq 1 ] && [ $SHOW_BOLD -eq 0 ] && continue
+
+      case $STYLE_CODE in
+        0) STYLE_NAME="normal" ;;
+        1) STYLE_NAME="bold" ;;
+        2) STYLE_NAME="faint" ;;
+        *) STYLE_NAME="?" ;;
+      esac
+
+      printf "%sm %6s \033[${STYLE_CODE};${FG_CODE}m%-8s \033[0m" "$FG_CODE" "$STYLE_NAME" "$FG_NAME"
       echo "$BG_CODES_LIST" | while read BG_CODE
       do
         printf "\033[${STYLE_CODE};${FG_CODE};${BG_CODE}m${TEST_TXT}\033[0m " "$BG_CODE"
