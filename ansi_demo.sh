@@ -26,7 +26,7 @@ print_palette ()
   TEST_TXT='aWm@*DEw'
   INDENT='                        '
   BG_CODES_LIST="$1"
-  echo "$INDENT default   black     red     green   yellow    blue    magenta   cyan     white  "
+  echo "$INDENT  black     red     green   yellow    blue    magenta   cyan    white   default  "
 
   printf "%s" "$INDENT"
   echo "$BG_CODES_LIST" | while read BG_CODE
