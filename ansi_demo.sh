@@ -46,21 +46,15 @@ EOF
   fi
 done
 
-print_palette ()
+TEST_TXT='Wm@*E'
+INDENT='                    '
+
+print_palette_segment ()
 {
-  TEST_TXT='Wm@*E'
-  INDENT='                    '
   BG_CODES_LIST="$1"
-  echo "${INDENT}black -red- green yellw blue- mgnta cyan- white deflt"
+  FG_CODES_LIST="$2"
 
-  printf "%s" "$INDENT"
-  echo "$BG_CODES_LIST" | while read BG_CODE
-  do
-    printf "%3sm  " "$BG_CODE"
-  done
-  echo ""
-
-  for FG_CODE in $(seq 30 37; echo 39; seq 90 97)
+  for FG_CODE in $FG_CODES_LIST
   do
     case $FG_CODE in
       39) FG_NAME="DEFAULT" ;;
@@ -97,13 +91,33 @@ print_palette ()
       esac
 
       printf "%sm %6s \033[${STYLE_CODE};${FG_CODE}m%-8s \033[0m" "$FG_CODE" "$STYLE_NAME" "$FG_NAME"
-      echo "$BG_CODES_LIST" | while read BG_CODE
+      for BG_CODE in $BG_CODES_LIST
       do
         printf "\033[${STYLE_CODE};${FG_CODE};${BG_CODE}m${TEST_TXT}\033[0m " "$BG_CODE"
       done
       printf "\033[0m\n"
     done
   done
+}
+
+print_palette ()
+{
+  BG_CODES_LIST="$1"
+
+  echo "${INDENT}black  red  green yellw blue  mgnta cyan  white deflt"
+
+  printf "%s" "$INDENT"
+  for BG_CODE in $BG_CODES_LIST
+  do
+    printf "%3sm  " "$BG_CODE"
+  done
+  echo ""
+
+  print_palette_segment "$BG_CODES_LIST" "$(seq 30 37)"  # normal foreground colours
+  echo ""
+  print_palette_segment "$BG_CODES_LIST" "39"            # default foreground colours
+  echo ""
+  print_palette_segment "$BG_CODES_LIST" "$(seq 90 97)"  # bright foreground colours
 }
 
 printf "=== \033[1mPalette of 'normal' background colours\033[0m ===\n"
